@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Container } from "shards-react";
+import { apolloClient } from "../apollo/config";
+import { ApolloProvider } from "@apollo/client";
 
 // local components
 import Messages from "./Messages";
@@ -9,9 +10,9 @@ export default function Chat() {
   const [user, setUser] = useState("Jack");
 
   return (
-    <Container>
+    <ApolloProvider client={apolloClient}>
       <Messages user={user} />
       <SendMessage user={user} updateUser={(e) => setUser(e.target.value)} />
-    </Container>
+    </ApolloProvider>
   );
 }
