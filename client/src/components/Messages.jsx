@@ -1,13 +1,11 @@
 import React from "react";
-import { useQuery } from "@apollo/client";
+import { useSubscription } from "@apollo/client";
 
 // api
-import { GET_MESSAGES } from "../apollo/queries";
+import { SUBSCRIBE_MESSAGES } from "../apollo/subscriptions";
 
 export default function Messages({ user }) {
-  const { data: { messages } = {} } = useQuery(GET_MESSAGES, {
-    pollInterval: 500,
-  });
+  const { data: { messages } = {} } = useSubscription(SUBSCRIBE_MESSAGES);
 
   const sentByCurrentUser = (sender) => sender === user;
 

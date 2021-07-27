@@ -1,6 +1,11 @@
-const { GraphQLServer } = require("graphql-yoga");
+const { GraphQLServer, PubSub } = require("graphql-yoga");
 
 const messages = [];
+
+const pubsub = new PubSub();
+
+const subscribers = [];
+const onMessageUpdate = (fn) => subscribers.push(fn);
 
 const typeDefs = `
   type Message {
@@ -16,6 +21,10 @@ const typeDefs = `
   type Mutation {
     postMessage(user: String!, content: String!): ID! 
   }
+
+  type Subscription {
+    messages: [Message!]
+  }
 `;
 
 const resolvers = {
@@ -30,7 +39,20 @@ const resolvers = {
         user,
         content,
       });
+      subscribers.forEach((fn) => fn());
+
       return id;
+    },
+  },
+  Subscription: {
+    messages: {
+      subscribe: (_, args, { pubsub }) => {
+        const channel = Math.random().toString(36).slice(2, 15);
+        onMessageUpdate(() => pubsub.publish(channel, { messages }));
+        setTimeout(() => pubsub.publish(channel, { messages }), 0);
+
+        return pubsub.asyncIterator(channel);
+      },
     },
   },
 };
@@ -38,6 +60,7 @@ const resolvers = {
 const server = new GraphQLServer({
   resolvers,
   typeDefs,
+  context: { pubsub },
 });
 
 server.start(({ port }) => {
